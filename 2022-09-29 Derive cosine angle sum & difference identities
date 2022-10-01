@@ -1,0 +1,330 @@
+from manim import *
+config.frame_width = 18
+config.frame_height = 32
+config.pixel_width = 1080
+config.pixel_height = 1920
+config.background_color = DARKER_GRAY
+
+
+class Run1(Scene):
+    def construct(self):
+        Tex.set_default(arg_separator=" ", font_size = 70)
+        nWait1 = 3.2 #interval between animations
+
+        #title
+        tTitle1 = Tex(r"\textbf{Derive cosine angle sum \\ \& difference identities}", font_size=120, color=ORANGE)
+        tTitle1.move_to([0,11,0])
+        tTitle2 = Tex(r"$\cos{(A-B)} = \cos{A}\cos{B} + \sin{A}\sin{B}$", font_size=85, color=ORANGE)
+        tTitle2.next_to(tTitle1, DOWN*4)
+        self.add(tTitle1, tTitle2)
+
+        #circle
+        circle1 = Circle(radius=4, color=WHITE).next_to(tTitle2, DOWN*8)
+        p0 = Point().move_to(circle1)
+        dot0 = Dot(radius=0.15).move_to(p0)
+        label0 = Tex("O").next_to(p0, DL)
+        line0 = Line(p0,circle1.point_at_angle(0))
+        arrowAxis = Arrow(LEFT*5, RIGHT*5.5).move_to(circle1)
+
+
+        def vAngle(angle, factor=1.0, radius=1.0, start=Point()):
+            return np.multiply(radius, np.array([np.cos(angle.get_value()*factor),np.sin(angle.get_value()*factor),0])) + start.get_center()
+
+        #point1
+        angle1 = ValueTracker(0.01)
+        p1 = Point().move_to(circle1.point_at_angle(angle1.get_value()))\
+            .add_updater(lambda i : i.move_to(circle1.point_at_angle(angle1.get_value())))
+        dot1 = Dot(radius=0.15).move_to(p1)\
+            .add_updater(lambda i : i.move_to(p1))
+        labelP1 = Tex(r"(1,0)").next_to(p1, UR)\
+            .add_updater(lambda i : i.move_to(p1).shift(vAngle(angle1,1,1.2)) if angle1.get_value() > 0.05*PI else None)
+        line1 = Line(p0, p1)\
+            .add_updater(lambda i : i.put_start_and_end_on(p0.get_center(),p1.get_center()))
+        arc1 = Arc(0.6, angle=angle1.get_value(), arc_center=p0.get_center()).add_tip().set_color(BLUE)\
+            .add_updater(lambda i : i.become(Arc(0.6, angle=angle1.get_value(), arc_center=p0.get_center()).add_tip().set_color(BLUE)))
+        labelArc1 = Tex(r"A").move_to(vAngle(angle1,0.5,1.5,p0))\
+            .add_updater(lambda i : i.move_to(vAngle(angle1,0.5,1.5,p0)))
+
+        #point2
+        angle2 = ValueTracker(0.01)
+        p2 = Point().move_to(circle1.point_at_angle(angle2.get_value()))\
+            .add_updater(lambda i : i.move_to(circle1.point_at_angle(angle2.get_value())))
+        dot2 = Dot(radius=0.15).move_to(p2)\
+            .add_updater(lambda i : i.move_to(p2))
+        labelP2 = Tex(r"(1,0)").next_to(p2, UR)\
+            .add_updater(lambda i : i.move_to(p2).shift(vAngle(angle2,1,1.7)) if angle2.get_value() > 0.05*PI else None)
+        line2 = Line(p0, p2)\
+            .add_updater(lambda i : i.put_start_and_end_on(p0.get_center(),p2.get_center()))
+        arc2 = Arc(1, angle=angle2.get_value(), arc_center=p0.get_center()).add_tip().set_color(TEAL)\
+            .add_updater(lambda i : i.become(Arc(1, angle=angle2.get_value(), arc_center=p0.get_center()).add_tip().set_color(TEAL)))
+        labelArc2 = Tex(r"B").move_to(vAngle(angle2,0.5,1.5,p0))\
+            .add_updater(lambda i : i.move_to(vAngle(angle2,0.5,1.5,p0)))
+
+        self.play(
+            Create(VGroup(circle1, dot0, label0, arrowAxis)),
+            run_time=1
+        )
+        self.wait(nWait1/2 - 1)
+
+        VGroup(dot1, labelP1, arc1, labelArc1).set_color(BLUE)
+        VGroup(dot2, labelP2, arc2, labelArc2).set_color(TEAL)
+        self.play(
+            Create(VGroup(dot1)),
+            Write(VGroup(labelP1)),
+            run_time=0.5
+        )
+        self.wait(nWait1/2 - 0.5)
+
+        self.add(p1, line1, dot1, arc1, labelArc1)
+        self.add(p2, line2, dot2, arc2, labelArc2)
+        self.play(
+            angle1.animate.set_value(0.7*PI),
+            angle2.animate.set_value(0.2*PI),
+            labelP1.animate.become(Tex(r"$(\cos{A}, \sin{A})$").next_to(p1, UR).set_color(BLUE)),
+            labelP2.animate.become(Tex(r"$(\cos{B}, \sin{B})$").next_to(p2, UR).set_color(TEAL)),
+            run_time=1
+        )
+        self.wait(nWait1/2 - 1)
+
+        VGroup(dot1, labelP1, arc1, labelArc1, dot2, labelP2, arc2, labelArc2).clear_updaters()
+
+        #line p1 to p2
+        line3 = Line(p1, p2)
+        labelLine3 = Tex(r"$d$").next_to(line3, UP, 0)
+
+        VGroup(arc1, labelArc1, arc2, labelArc2).set_color(WHITE)
+        VGroup(line3, dot1, labelP1, dot2, labelP2, labelLine3).set_color(BLUE)
+        self.play(Create(VGroup(line3, labelLine3), run_time=1))
+        self.wait(nWait1/2 - 1)
+
+        # self.wait(31)
+
+        arc3 =  Arc(0.8, angle2.get_value(), angle1.get_value()-angle2.get_value(), arc_center=p0.get_center()).add_tip()
+        labelArc3 = Tex(r"$A-B$").move_to(vAngle(angle1,9/14,1.5,p0))
+
+        VGroup(dot1, labelP1, dot2, labelP2, line3, labelLine3, arc3, labelArc3).set_color(BLUE)
+        self.add(VGroup(circle1, dot0, label0, arrowAxis, dot1, labelP1, line1, dot2, labelP2, line2, line3, labelLine3))
+        self.play(
+            ReplacementTransform(VGroup(arc1, labelArc1, arc2, labelArc2), VGroup(arc3, labelArc3)),
+            run_time=1
+        )
+        self.wait(nWait1/2 - 1)
+
+        labelLine1 = Tex(r"$1$").move_to(line1).shift([-0.7,0,0])
+        labelLine2 = Tex(r"$1$").move_to(line2).shift([0.7,0,0])
+
+        VGroup(labelLine1, labelLine2).set_color(BLUE)
+        self.play(
+            VGroup(labelP1, labelP2).animate.set_color(WHITE),
+            VGroup(line1, line2).animate.set_color(BLUE),
+            FadeIn(labelLine1, labelLine2),
+            run_time=0.5
+        )
+        self.wait(nWait1/2 - 0.5)
+
+
+class Run2(Scene):
+    def construct(self):
+        Tex.set_default(arg_separator=" ", font_size = 75)
+        nWait1 = 3.3 #interval between animations
+
+        pStart = Point().to_corner(UL).shift([0,0,0])
+        label1 = Tex(r"Pythagoras' theorem").next_to(pStart).set_x(0)
+
+        self.play(
+            FadeIn(label1),
+            run_time=0.5
+        )
+        self.wait(nWait1/2 - 0.5)
+
+        #Wline1
+        pStart.shift([0,-1.5,0])
+        tex1 = Tex(r"$ d^2 = $", r"$ (\cos{A}-\cos{B})^2 $", "+", r"$ (\sin{A}-\sin{B})^2 $").next_to(pStart)
+        tex1[2:4].set_color(config.background_color)
+
+        self.play(
+            FadeIn(tex1),
+            run_time=0.5
+        )
+        self.wait(nWait1/2 - 0.5)
+
+        self.play(
+            tex1[2:4].animate.set_color(WHITE),
+            run_time=0.5
+        )
+        self.wait(nWait1/2 - 0.5)
+
+        # line2
+        pStart.shift([0,-1.5,0])
+        tex2 = Tex("=", r"$ (\cos^2{A}+\cos^2{B}-2\cos{A}\cos{B}) $", "+", r"$ (\sin^2{A}+\sin^2{B}-2\sin{A}\sin{B}) $").next_to(pStart)
+        tex2[1].set_color(BLUE)
+        tex2[2:].set_color(config.background_color)
+
+        self.play(
+            VGroup(tex1[1]).animate.set_color(BLUE),
+            FadeIn(tex2),
+            run_time=0.5
+        )
+        self.wait(nWait1 - 0.5)
+
+        self.play(
+            tex2[1].animate.scale(0.4).next_to(tex2[0]),
+            run_time=0.5
+        )
+
+        tex2[2:].arrange(buff=0.3).next_to(tex2[1])
+
+        self.play(
+            VGroup(tex1[1], tex2[1], tex2[2]).animate.set_color(WHITE),
+            VGroup(tex1[3], tex2[3]).animate.set_color(BLUE),
+            run_time=0.5
+        )
+        self.wait(nWait1 - 0.5)
+
+        tex2_1 = Tex("=").move_to(tex2[0])
+        tex2_2 = Tex("(", r"$ \cos^2{A} $", "+", r"$ \cos^2{B} $", "-", r"$ 2\cos{A}\cos{B} $", ") + (", r"$ \sin^2{A} $", "+", r"$ \sin^2{B} $", "-", r"$ 2\sin{A}\sin{B} $", ")", font_size=50).next_to(tex2_1)
+
+        self.add(tex2_1)
+        self.play(
+            tex1[3].animate.set_color(WHITE),
+            tex2.animate.become(tex2_2),
+            run_time=0.5
+        )
+        self.wait(nWait1 - 0.5)
+
+        pStart.shift([0,-1.5,0])
+        tex3 = Tex("=", r"$ (\cos^2{A} + \sin^2{A}) $", "+", r"$ (\cos^2{B} + \sin^2{B}) $", "-", r"$ 2\cos{A}\cos{B} $", "-", r"$ 2\sin{A}\sin{B} $").next_to(pStart)
+        tex3[1].set_color(BLUE)
+        tex3[2:].set_color(config.background_color)
+
+        self.play(
+            VGroup(tex2[1], tex2[7]).animate.set_color(BLUE),
+            FadeIn(tex3),
+            run_time=0.5
+        )
+        self.wait(nWait1 - 0.5)
+
+        tex3_1 = Tex("=", "1", "+", r"$ (\cos^2{B} + \sin^2{B}) $", "-", r"$ 2\cos{A}\cos{B} $", "-", r"$ 2\sin{A}\sin{B} $").next_to(pStart)
+        tex3_1[1].set_color(BLUE)
+        tex3_1[2:].set_color(config.background_color)
+
+        self.play(
+            tex3.animate.become(tex3_1),
+            run_time=0.5
+        )
+        self.wait(nWait1 - 0.5)
+
+        self.play(
+            VGroup(tex2[1], tex2[7]).animate.set_color(WHITE),
+            VGroup(tex2[3], tex2[9]).animate.set_color(BLUE),
+            tex3[1:3].animate.set_color(WHITE),
+            tex3[3].animate.set_color(BLUE),
+            run_time=0.5
+        )
+        self.wait(nWait1 - 0.5)
+
+        tex3_1 = Tex("=", "1", "+", "1", "-", r"$ 2\cos{A}\cos{B} $", "-", r"$ 2\sin{A}\sin{B} $").next_to(pStart)
+        tex3_1[3].set_color(BLUE)
+        tex3_1[4:].set_color(config.background_color)
+
+        self.play(
+            tex3.animate.become(tex3_1),
+            run_time=0.5
+        )
+        self.wait(nWait1 - 0.5)
+
+        self.play(
+            VGroup(tex2[3], tex2[9]).animate.set_color(WHITE),
+            VGroup(tex2[5], tex2[11]).animate.set_color(BLUE),
+            VGroup(tex3[3], tex3[4], tex3[6]).animate.set_color(WHITE),
+            VGroup(tex3[5], tex3[7]).animate.set_color(BLUE),
+            run_time=0.5
+        )
+        self.wait(nWait1 - 0.5)
+
+        tex3_1 = Tex(r"$ 2(\cos{A}\cos{B}+\sin{A}\sin{B}) $").next_to(tex3[4])
+        tex3_1.set_color(BLUE)
+
+        self.play(
+            tex3[5:].animate.become(tex3_1),
+            run_time=0.5
+        )
+        self.wait(nWait1 - 0.5)
+
+        pStart = Point().to_corner(UL).shift([0,-1.5,0])
+        tex4 = Tex(r"$ d^2 = $", r"$ 2-2(\cos{A}\cos{B}+\sin{A}\sin{B}) $").next_to(pStart).set_x(0)
+        tex4[1].set_color(BLUE)
+
+        self.play(
+            FadeOut(tex1, tex2, tex2_1),
+            ReplacementTransform(tex3, tex4),
+            run_time=1
+        )
+        self.wait(nWait1 - 1)
+
+        pStart.shift([0,-2.5,0])
+        label2 = Tex(r"Cosine rule").next_to(pStart).set_x(0)
+
+        self.play(
+            FadeIn(label2),
+            run_time=0.5
+        )
+        self.wait(nWait1/2 - 0.5)
+
+        pStart.shift([0,-1.5,0])
+        tex5 = Tex(r"$ d^2 = $", r"$ 1^2+1^2-2\cos{(A-B)} $").next_to(pStart).set_x(0)
+        tex5[1].set_color(BLUE)
+
+        self.play(
+            tex4[1].animate.set_color(WHITE),
+            FadeIn(tex5),
+            run_time=0.5
+        )
+        self.wait(nWait1 - 0.5)
+
+        tex5_1 = Tex(r"$ 2-2\cos{(A-B)} $").next_to(tex5[0]).shift([0,-0.1,0])
+        tex5_1.set_color(BLUE)
+
+        self.play(
+            tex5[1].animate.become(tex5_1),
+            run_time=0.5
+        )
+        self.wait(nWait1 - 0.5)
+
+        pStart = Point().to_corner(UL)
+        label3 = Tex(r"Cosine angle difference identity").next_to(pStart).set_x(0)
+
+        pStart.shift([0,-1.5,0])
+        tex6 = Tex("2", "-2", r"$ \cos{(A-B)} $", "=", "2", "-2", "(", r"$ \cos{A}\cos{B}+\sin{A}\sin{B} $", ")").next_to(pStart).set_x(0)
+
+        self.play(
+            FadeOut(label2),
+            ReplacementTransform(label1, label3),
+            ReplacementTransform(tex5, tex6[0:3]),
+            ReplacementTransform(tex4, tex6[3:]),
+            run_time=1
+        )
+        self.wait(nWait1 - 1)
+
+        self.play(
+            FadeOut(tex6[0], tex6[4]),
+            run_time=0.5
+        )
+        self.wait(nWait1/2 - 0.5)
+
+        self.play(
+            FadeOut(tex6[1], tex6[5], tex6[6], tex6[8]),
+            run_time=0.5
+        )
+        self.wait(nWait1/2 - 0.5)
+
+        tex6_1 = Tex(r"$ \cos{(A-B)} $", "=", r"$ \cos{A}\cos{B}+\sin{A}\sin{B} $").next_to(pStart).set_x(0)
+        tex6_1.set_color(BLUE)
+
+        self.play(
+            tex6[2].animate.become(tex6_1[0]),
+            tex6[3].animate.become(tex6_1[1]),
+            tex6[7].animate.become(tex6_1[2]),
+            run_time=0.5
+        )
+        self.wait(nWait1 - 0.5)
