@@ -26,7 +26,6 @@ class Run1(Scene):
         line0 = Line(p0,circle1.point_at_angle(0))
         arrowAxis = Arrow(LEFT*5, RIGHT*5.5).move_to(circle1)
 
-
         def vAngle(angle, factor=1.0, radius=1.0, start=Point()):
             return np.multiply(radius, np.array([np.cos(angle.get_value()*factor),np.sin(angle.get_value()*factor),0])) + start.get_center()
 
@@ -121,6 +120,7 @@ class Run1(Scene):
             run_time=0.5
         )
         self.wait(nWait1/2 - 0.5)
+
 
 
 class Run2(Scene):
